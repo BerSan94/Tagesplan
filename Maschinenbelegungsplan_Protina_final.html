@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Protina – Maschinenbelegungsplan 2026</title>
+<style>
+:root{
+  --or:#E8640A;--orl:#FFF3E8;--te:#2E7D8C;--tel:#E8F4F6;
+  --gr:#2E7D4F;--grl:#E8F6EE;--re:#C0392B;--rel:#FDECEA;
+  --bl:#1A5276;--bll:#EBF5FB;--gy:#5D6D7E;--gyl:#F4F6F7;
+  --bd:#D5D8DC;--font:'Segoe UI',Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:#F0F2F5;color:#2C3E50;font-size:12px;}
+
+/* HEADER */
+.hdr{background:var(--or);color:#fff;padding:10px 20px;display:flex;
+  align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.hdr-logo{font-size:18px;font-weight:800;letter-spacing:1px;
+  border-right:2px solid rgba(255,255,255,.4);padding-right:14px;margin-right:14px;}
+.hdr-title{font-size:13px;font-weight:600;}
+.hdr-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.hdr-meta label{font-size:11px;opacity:.85;}
+.hdr-meta input,.hdr-meta select{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);
+  color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-family:var(--font);}
+.hdr-meta select option{background:#333;}
+.hdr-badge{background:rgba(255,255,255,.25);padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;}
+
+/* TABS */
+.tabs{background:#fff;border-bottom:2px solid var(--bd);display:flex;padding:0 20px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);overflow-x:auto;}
+.tab{padding:9px 16px;cursor:pointer;font-size:12px;font-weight:500;color:var(--gy);
+  border-bottom:3px solid transparent;white-space:nowrap;user-select:none;transition:all .2s;}
+.tab:hover{color:var(--or);background:var(--orl);}
+.tab.active{color:var(--or);border-bottom-color:var(--or);font-weight:700;}
+
+/* CONTENT */
+.content{padding:16px 20px;}
+.tp{display:none;} .tp.active{display:block;}
+
+/* META ROW */
+.mr{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.mb{background:#fff;border-radius:6px;padding:10px 14px;border-left:4px solid var(--or);
+  box-shadow:0 1px 4px rgba(0,0,0,.08);flex:1;min-width:140px;}
+.mb label{font-size:10px;text-transform:uppercase;color:var(--gy);letter-spacing:.5px;display:block;margin-bottom:3px;}
+.mb input,.mb select{font-size:13px;font-weight:600;color:#2C3E50;border:none;outline:none;
+  width:100%;font-family:var(--font);background:transparent;cursor:pointer;}
+
+/* CARD */
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);
+  margin-bottom:14px;overflow:hidden;}
+.ch{background:var(--or);color:#fff;padding:9px 14px;font-weight:700;font-size:12px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.ch.teal{background:var(--te);}
+.ch.blue{background:var(--bl);}
+.ch.green{background:var(--gr);}
+.ch.red{background:var(--re);}
+.ch-btns{display:flex;gap:6px;}
+.btn-fill{background:#fff;color:var(--or);border:2px solid #fff;border-radius:5px;
+  padding:3px 12px;font-weight:700;font-size:11px;cursor:pointer;}
+.btn-clear{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);
+  border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;}
+
+/* TABLES */
+.sx{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{background:var(--gyl);padding:6px 8px;text-align:left;font-size:10px;font-weight:700;
+  text-transform:uppercase;color:var(--gy);border-bottom:2px solid var(--bd);white-space:nowrap;}
+td{padding:5px 7px;border-bottom:1px solid var(--bd);vertical-align:middle;}
+tr:hover td{background:var(--orl);}
+tr:last-child td{border-bottom:none;}
+
+/* Schicht-Kopfzeile */
+.sh-header th{background:var(--or);color:#fff;font-size:11px;text-align:center;}
+.sh-sub th{background:#f8f0e8;color:var(--or);font-size:10px;}
+.sp-header th{background:var(--te);color:#fff;font-size:11px;text-align:center;}
+.sp-sub th{background:#e8f0f4;color:var(--te);font-size:10px;}
+
+/* Gruppenzeile */
+.grp td{background:#ECF0F1;font-weight:700;font-size:10px;text-transform:uppercase;
+  color:var(--gy);padding:5px 10px;letter-spacing:.5px;}
+
+/* Anlage */
+.an{font-weight:600;color:#2C3E50;}
+.an-stick{color:var(--or);}
+
+/* MA-Select */
+.ms{border:1px solid var(--bd);border-radius:4px;padding:3px 6px;font-size:11px;
+  font-family:var(--font);width:100%;min-width:120px;background:#fff;cursor:pointer;}
+.ms:focus{outline:none;border-color:var(--or);}
+.ms.filled{background:var(--grl);border-color:var(--gr);}
+.ms.absent{background:var(--rel);border-color:var(--re);color:var(--re);}
+
+/* Inaktiv */
+.inact{color:var(--bd);font-weight:700;}
+
+/* Info */
+.info{background:var(--bll);border-left:4px solid var(--bl);padding:8px 12px;
+  border-radius:4px;font-size:11px;color:var(--bl);margin-bottom:12px;}
+
+/* Legend */
+.leg{display:flex;gap:8px;flex-wrap:wrap;padding:8px 12px;
+  background:var(--gyl);border-top:1px solid var(--bd);font-size:10px;color:var(--gy);}
+.leg span{display:flex;align-items:center;gap:4px;}
+
+/* Badge */
+.bdg{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;}
+.bdg-or{background:var(--orl);color:var(--or);}
+.bdg-te{background:var(--tel);color:var(--te);}
+.bdg-gy{background:var(--gyl);color:var(--gy);}
+.bdg-re{background:var(--rel);color:var(--re);}
+
+/* UK */
+.us{border:1px solid var(--bd);border-radius:4px;padding:3px 6px;font-size:11px;
+  cursor:pointer;font-family:var(--font);width:100%;}
+.us.abs{background:var(--rel);color:var(--re);border-color:var(--re);font-weight:600;}
+.ud{border:1px solid var(--bd);border-radius:4px;padding:3px 6px;font-size:11px;
+  font-family:var(--font);width:100%;}
+
+/* Qual */
+.qs{border:1px solid var(--bd);border-radius:3px;font-size:11px;padding:2px 4px;
+  background:#fff;cursor:pointer;width:100%;}
+
+/* SK */
+.sk-a{background:var(--orl);color:var(--or);font-weight:700;padding:2px 7px;border-radius:4px;display:inline-block;}
+.sk-b{background:var(--tel);color:var(--te);font-weight:700;padding:2px 7px;border-radius:4px;display:inline-block;}
+.sk-cl{background:var(--rel);color:var(--re);font-weight:700;padding:2px 7px;border-radius:4px;display:inline-block;}
+.sk-cur{background:#FFF3E8;}
+
+/* WO */
+.wo-fr{font-size:10px;color:var(--or);}
+.wo-sp{font-size:10px;color:var(--te);}
+
+/* Abpackform input */
+.ap-input{border:1px solid var(--bd);border-radius:4px;padding:3px 5px;font-size:11px;
+  font-family:var(--font);width:100%;min-width:100px;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div style="display:flex;align-items:center;">
+    <div class="hdr-logo">PROTINA</div>
+    <div class="hdr-title">Maschinenbelegungsplan 2026 — Konfektionierung</div>
+  </div>
+  <div class="hdr-meta">
+    <label>KW:</label>
+    <input type="number" id="gKW" value="30" min="1" max="52" style="width:46px;" oninput="onGKW(this.value)">
+    <label>Datum:</label>
+    <input type="date" id="gDate" oninput="onGDate(this.value)">
+    <label>Team A:</label>
+    <select id="gTeam" onchange="onGTeam(this.value)">
+      <option value="frueh">Frühschicht (06:00–14:15)</option>
+      <option value="spaet">Spätschicht (14:00–22:15)</option>
+    </select>
+    <span class="hdr-badge" id="gBadge">KW 30</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active"  onclick="showTab('zwei')">📋 Zweischicht (Mo–Do)</div>
+  <div class="tab"         onclick="showTab('fr')">📋 Freitag</div>
+  <div class="tab"         onclick="showTab('sa')">📋 Samstag</div>
+  <div class="tab"         onclick="showTab('wo')">📅 Wochenuebersicht</div>
+  <div class="tab"         onclick="showTab('kal')">🗓 Schichtkalender</div>
+  <div class="tab"         onclick="showTab('uk')">🔴 Urlaub &amp; Krank</div>
+  <div class="tab"         onclick="showTab('qual')">⭐ Qualifikationen</div>
+  <div class="tab"         onclick="showTab('mal')">👥 Mitarbeiterliste</div>
+</div>
+
+<div class="content">
+
+<!-- ══ TAB: ZWEISCHICHT ══ -->
+<div class="tp active" id="tp-zwei">
+  <div class="mr">
+    <div class="mb"><label>Kalenderwoche</label>
+      <input type="number" id="kwZwei" value="30" min="1" max="52" oninput="onGKW(this.value)"></div>
+    <div class="mb"><label>Datum</label>
+      <input type="date" id="datZwei" oninput="onGDate(this.value)"></div>
+    <div class="mb"><label>Team A diese Woche</label>
+      <select id="teamZwei" onchange="onGTeam(this.value)">
+        <option value="frueh">Frühschicht (06:00–14:15)</option>
+        <option value="spaet">Spätschicht (14:00–22:15)</option>
+      </select></div>
+    <div class="mb" style="border-left-color:var(--te)"><label>Zuständig (Kürzel)</label>
+      <input type="text" placeholder="AA / Mei / AV …" style="font-size:12px;border:none;outline:none;width:100%;font-family:var(--font)"></div>
+  </div>
+
+  <div class="card">
+    <div class="ch">
+      <span>🏭 MASCHINENBELEGUNG — ZWEISCHICHT (Mo – Do)</span>
+      <div class="ch-btns">
+        <button class="btn-fill" onclick="autoBefuellen('tp-zwei','frueh')">⚡ Frühschicht befüllen</button>
+        <button class="btn-fill" onclick="autoBefuellen('tp-zwei','spaet')" style="color:var(--te)">⚡ Spätschicht befüllen</button>
+        <button class="btn-clear" onclick="planLeeren('tp-zwei')">🗑 Leeren</button>
+      </div>
+    </div>
+    <div class="sx"><table id="tbl-zwei"><thead id="thead-zwei"></thead><tbody id="tbody-zwei"></tbody></table></div>
+    <div class="leg">
+      <span><span class="bdg bdg-or">★ OEE</span> Stickanlage</span>
+      <span>🟢 besetzt &nbsp; 🔴 abwesend &nbsp; – inaktiv</span>
+      <span style="font-size:10px;color:var(--gy);">Zust.: AA=A.Amann · APR=A.Propst · Mei=Meister · Nie=Niebler · AV=AV · –=inaktiv</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch">☕ PAUSENABLÖSUNG — ZWEISCHICHT</div>
+    <div class="sx"><table><thead>
+      <tr><th rowspan="2">Anlage</th>
+        <th colspan="3" style="text-align:center;background:var(--orl);color:var(--or);">Frühschicht</th>
+        <th colspan="3" style="text-align:center;background:var(--tel);color:var(--te);">Spätschicht</th></tr>
+      <tr>
+        <th>10:00 MA1 (auto)</th><th>10:00 MA2</th><th>10:30 MA1 / MA2</th>
+        <th>18:00 MA1 (auto)</th><th>18:00 MA2</th><th>18:30 MA1 / MA2</th>
+      </tr>
+    </thead><tbody id="tbody-pause-zwei"></tbody></table></div>
+    <div class="leg"><span>🟢 MA1 automatisch · 🟡 weitere Ablöser per Dropdown · 🔴 heute abwesend</span></div>
+  </div>
+</div>
+
+<!-- ══ TAB: FREITAG ══ -->
+<div class="tp" id="tp-fr">
+  <div class="mr">
+    <div class="mb"><label>Kalenderwoche</label><input type="number" value="30" min="1" max="52"></div>
+    <div class="mb"><label>Datum (Freitag)</label><input type="date"></div>
+  </div>
+  <div class="info">🕐 <strong>Schichtzeiten:</strong> Frühschicht 06:00–09:15 &nbsp;|&nbsp; Mittelschicht 09:15–14:00 &nbsp;|&nbsp; Spätschicht 14:00–17:30</div>
+  <div class="card">
+    <div class="ch">
+      <span>🏭 MASCHINENBELEGUNG — FREITAG</span>
+      <div class="ch-btns">
+        <button class="btn-fill" onclick="autoBefuellen('tp-fr','frueh')">⚡ Früh/Mittel befüllen</button>
+        <button class="btn-fill" onclick="autoBefuellen('tp-fr','spaet')" style="color:var(--te)">⚡ Spät befüllen</button>
+        <button class="btn-clear" onclick="planLeeren('tp-fr')">🗑 Leeren</button>
+      </div>
+    </div>
+    <div class="sx"><table><thead id="thead-fr"></thead><tbody id="tbody-fr"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="ch">☕ PAUSENABLÖSUNG — FREITAG</div>
+    <div class="sx"><table><thead>
+      <tr><th rowspan="2">Anlage</th>
+        <th colspan="3" style="text-align:center;background:var(--orl);color:var(--or);">10:00 Uhr</th>
+        <th colspan="3" style="text-align:center;background:var(--tel);color:var(--te);">13:00 Uhr</th></tr>
+      <tr>
+        <th>MA1 (auto)</th><th>MA2</th><th>10:30 Ablöser</th>
+        <th>MA1 (auto)</th><th>MA2</th><th>13:30 Ablöser</th>
+      </tr>
+    </thead><tbody id="tbody-pause-fr"></tbody></table></div>
+    <div class="leg"><span>🟢 MA1 automatisch (Mittel-10:00, Spät-13:00) · 🟡 je Uhrzeit 2 Ablöser · 🔴 heute abwesend</span></div>
+  </div>
+</div>
+
+<!-- ══ TAB: SAMSTAG ══ -->
+<div class="tp" id="tp-sa">
+  <div class="mr">
+    <div class="mb"><label>Kalenderwoche</label><input type="number" value="30" min="1" max="52"></div>
+    <div class="mb"><label>Datum (Samstag)</label><input type="date"></div>
+    <div class="mb" style="border-left-color:var(--te)"><label>Zuständig</label>
+      <input type="text" placeholder="Kürzel …" style="font-size:12px;border:none;outline:none;width:100%;font-family:var(--font)"></div>
+  </div>
+  <div class="info">🕐 <strong>Schichtzeiten:</strong> Frühschicht ca. 06:00–12:00 · Selektive Bereiche</div>
+  <div class="card">
+    <div class="ch">
+      <span>🏭 MASCHINENBELEGUNG — SAMSTAG</span>
+      <div class="ch-btns">
+        <button class="btn-fill" onclick="autoBefuellen('tp-sa','frueh')">⚡ Plan befüllen</button>
+        <button class="btn-clear" onclick="planLeeren('tp-sa')">🗑 Leeren</button>
+      </div>
+    </div>
+    <div class="sx"><table><thead>
+      <tr class="sh-header">
+        <th style="text-align:left;">Anlage / Bereich</th>
+        <th>Abpackform / Produkt</th>
+        <th>MA 1</th><th>MA 2</th><th>MA 3</th><th>MA 4</th>
+        <th>Meister</th><th>Bemerkung</th>
+      </tr>
+    </thead><tbody id="tbody-sa"></tbody></table></div>
+    <div class="leg"><span>Frühschicht (06:00–12:00) · selektive Bereiche</span></div>
+  </div>
+  <div class="card">
+    <div class="ch">☕ PAUSENABLÖSUNG — SAMSTAG (09:00 Uhr)</div>
+    <div class="sx"><table><thead>
+      <tr><th>Anlage</th><th>09:00 MA1 (auto)</th><th>09:00 MA2</th><th>09:30 MA1</th><th>09:30 MA2</th><th>Notiz</th></tr>
+    </thead><tbody id="tbody-pause-sa"></tbody></table></div>
+    <div class="leg"><span>🟢 MA1 automatisch 09:00 · 🟡 weitere Ablöser per Dropdown · –=inaktiv</span></div>
+  </div>
+</div>
+
+<!-- ══ TAB: WOCHENÜBERSICHT ══ -->
+<div class="tp" id="tp-wo">
+  <div class="mr">
+    <div class="mb"><label>Kalenderwoche</label><input type="number" value="30" min="1" max="52"></div>
+  </div>
+  <div class="card">
+    <div class="ch">📅 WOCHENUEBERSICHT MASCHINENBELEGUNG</div>
+    <div class="sx"><table><thead>
+      <tr><th style="min-width:160px;">Anlage</th><th>Schicht</th>
+        <th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th></tr>
+    </thead><tbody id="tbody-wo"></tbody></table></div>
+    <div class="leg"><span style="font-size:10px;">Detailpläne: Zweischicht · Freitag · Samstag</span></div>
+  </div>
+</div>
+
+<!-- ══ TAB: SCHICHTKALENDER ══ -->
+<div class="tp" id="tp-kal">
+  <div class="info">📌 <strong>Wöchentlicher Wechsel</strong> · KW 29 = Team A Frühschicht (Anker) · <strong>Betriebsschließung:</strong> KW 32–33 (August) und KW 52 (Dezember)</div>
+  <div class="card">
+    <div class="ch green">🗓 SCHICHTKALENDER 2026 — Team A / Team B Rotation</div>
+    <div class="sx"><table><thead>
+      <tr><th>KW</th><th>Team A</th><th>Team B</th><th>Hinweis</th></tr>
+    </thead><tbody id="tbody-kal"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ══ TAB: URLAUB & KRANK ══ -->
+<div class="tp" id="tp-uk">
+  <div class="info">💡 Status + Von/Bis-Datum eintragen – MA verschwindet <strong>sofort</strong> aus allen Dropdowns. Kein Datum = dauerhaft abwesend. &nbsp;|&nbsp; <strong>Heute:</strong> <span id="heuteDatum"></span></div>
+  <div class="card">
+    <div class="ch red">🔴 URLAUB &amp; KRANK — Abwesende Mitarbeiter</div>
+    <div class="sx"><table><thead>
+      <tr><th style="min-width:180px;">Mitarbeiter</th><th style="min-width:120px;">Status</th>
+        <th style="min-width:110px;">Von</th><th style="min-width:110px;">Bis</th><th>Notiz</th></tr>
+    </thead><tbody id="tbody-uk"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ══ TAB: QUALIFIKATIONEN ══ -->
+<div class="tp" id="tp-qual">
+  <div class="info">ℹ️ Qualifikationsstufen eintragen. „Plan befüllen" nutzt diese Matrix — nur ✅ und 🔄 werden automatisch eingeteilt.</div>
+  <div class="card">
+    <div class="ch blue">⭐ QUALIFIKATIONSMATRIX — Produktion Protina Pharmazeutische GmbH
+      <span style="font-size:10px;font-weight:400;opacity:.9;">✅ Vollqualifiziert · 🔄 In Ausbildung · 👁 Nur unter Aufsicht · – Nicht qualifiziert</span>
+    </div>
+    <div class="sx"><table><thead id="thead-qual"></thead><tbody id="tbody-qual"></tbody></table></div>
+    <div class="leg"><span>✅ Vollqualifiziert / alleine</span><span>🔄 In Ausbildung</span><span>👁 Nur unter Aufsicht</span><span>– Nicht qualifiziert</span></div>
+  </div>
+</div>
+
+<!-- ══ TAB: MITARBEITERLISTE ══ -->
+<div class="tp" id="tp-mal">
+  <div class="card">
+    <div class="ch teal">👥 MITARBEITERLISTE — Produktion Protina Pharmazeutische GmbH</div>
+    <div class="sx"><table><thead>
+      <tr><th>Name</th><th>Schicht / Team</th><th>Kürzel</th><th>Bemerkung</th></tr>
+    </thead><tbody id="tbody-mal"></tbody></table></div>
+    <div class="leg">
+      <span><span class="bdg bdg-or">Team A</span> Frühschicht</span>
+      <span><span class="bdg bdg-te">Team B</span> Spätschicht</span>
+      <span><span class="bdg bdg-gy">Sonder</span> Nur Früh / Schleuse / Behälterreinigung</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+// ════════════════════════════════════════════
+//  DATEN (aus Excel)
+// ════════════════════════════════════════════
+const ANLAGEN    = [{"name": "Misch- und Nassgranulierung", "gruppe": "Mischung", "stick": false, "ma3z": true, "ma4z": false, "blisterfix": false}, {"name": "Wiegezentrale", "gruppe": "Mischung", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "Containermischer 1", "gruppe": "Mischung", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "Containermischer 2", "gruppe": "Mischung", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "Wiegebereich 1", "gruppe": "Mischung", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "Singlepot VAC800", "gruppe": "Mischung", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "IMA Prexima 800", "gruppe": "Tablettierung", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "Kompaktierung 5", "gruppe": "Tablettierung", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "IMA Adapta 100", "gruppe": "Konfektionierung", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "IMA Blisteranlage", "gruppe": "Konfektionierung", "stick": false, "ma3z": true, "ma4z": false, "blisterfix": true}, {"name": "Stickanlage 1", "gruppe": "Stickanlagen", "stick": true, "ma3z": true, "ma4z": true, "blisterfix": false}, {"name": "Stickanlage 2", "gruppe": "Stickanlagen", "stick": true, "ma3z": true, "ma4z": true, "blisterfix": false}, {"name": "Stickanlage 3", "gruppe": "Stickanlagen", "stick": true, "ma3z": true, "ma4z": true, "blisterfix": false}, {"name": "Stickanlage 4", "gruppe": "Stickanlagen", "stick": true, "ma3z": true, "ma4z": true, "blisterfix": false}, {"name": "Schüttgutabfüllung 1", "gruppe": "Schüttgut", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "UET", "gruppe": "Schüttgut", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "Schüttgutabfüllung 2", "gruppe": "Schüttgut", "stick": false, "ma3z": true, "ma4z": false, "blisterfix": false}, {"name": "MFR Haus D OG1", "gruppe": "Sonstiges", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "Wasseranlage", "gruppe": "Sonstiges", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "Behälterreinigung", "gruppe": "Sonstiges", "stick": false, "ma3z": true, "ma4z": false, "blisterfix": false}, {"name": "Schleuse/Silo", "gruppe": "Sonstiges", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}, {"name": "Arbeitsvorbereitung", "gruppe": "Sonstiges", "stick": false, "ma3z": false, "ma4z": false, "blisterfix": false}];
+const QUAL_ANLAGEN = ["Misch- und Nassgranulierung", "Wiegezentrale", "Containermischer 1", "Containermischer 2", "Wiegebereich 1", "Singlepot VAC800", "IMA Prexima 800", "Kompaktierung 5", "IMA Adapta 100", "IMA Blisteranlage", "Stickanlage 1", "Stickanlage 2", "Stickanlage 3", "Stickanlage 4", "Schüttgutabfüllung 1", "Schüttgutabfüllung 2"];
+const PAUSE_ZWEI = ["Stickanlage 1", "Stickanlage 2", "Stickanlage 3", "Stickanlage 4", "Adapt / Prexi", "MNG"];
+const PAUSE_FR   = ["Stickanlage 1", "Stickanlage 2", "Stickanlage 3", "Stickanlage 4", "Schüttgut 2", "MNG"];
+const PAUSE_SA   = ["Stickanlage 1", "Stickanlage 2", "Stickanlage 3", "Stickanlage 4"];
+const MITARBEITER = [{"name": "Abdrachmanov, Kanat", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Aksamovic, Snjezana", "schicht": "Nur Frühschicht", "kuerzel": "", "bem": "bis auf weiteres 8:30–14:15 Uhr"}, {"name": "Andrijevic, Marko", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": "ab 01.01.2026"}, {"name": "Asten, Andreas", "schicht": "", "kuerzel": "", "bem": ""}, {"name": "Bach, Hai Yen", "schicht": "Nur Frühschicht", "kuerzel": "", "bem": "bis auf weiteres"}, {"name": "Balta, Ramazan", "schicht": "Schleuse", "kuerzel": "", "bem": "separater Schichtplan"}, {"name": "Bigott, Sabine", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Bisl, Katharina", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": "ab 01.09.2025"}, {"name": "Brunhuber, Sakourou", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}, {"name": "Cadaru, Simona", "schicht": "Behälterreinigung", "kuerzel": "", "bem": "separater Schichtplan ab 10.03.2025"}, {"name": "Emanuel, Paulina", "schicht": "Behälterreinigung", "kuerzel": "", "bem": "separater Schichtplan ab 10.03.2025"}, {"name": "Fischer, Stephanie", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}, {"name": "Göschl, Christoph", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}, {"name": "Hadgu, Isayas", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}, {"name": "Hart, Manfred", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}, {"name": "Hartkopf, Roberto", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}, {"name": "Hempel, Rico", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": "ab 01.10.2024"}, {"name": "Herchel, Viviana", "schicht": "Nur Frühschicht", "kuerzel": "", "bem": "ab 03.02.2025 bis auf weiteres"}, {"name": "Hoppenworth, Daniel", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}, {"name": "Hübsch, Michael", "schicht": "Nur Frühschicht", "kuerzel": "", "bem": "ab 01.10.2022"}, {"name": "Jabikov, Alex", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Kaspar, Yvonne", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": "ab 25.08.2025"}, {"name": "Kaufmann, Roland", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}, {"name": "Kayikci, Yilmaz-Salih", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": "ab 01.01.2025"}, {"name": "Knoepfle, Magdalena", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": "ab 01.07.2026"}, {"name": "Kuebler, Dennis", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": "ab 01.10.2024"}, {"name": "Kumbi, Muamba", "schicht": "Schleuse", "kuerzel": "", "bem": "separater Schichtplan"}, {"name": "Ludwig, Petra", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": "bis auf weiteres Di, Mi, Do"}, {"name": "Matuka, Ivona", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": "ab 01.06.2026, bis auf weiteres Di, Mi, Do"}, {"name": "Michalik, Jonathan", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": "ab 15.09.2025"}, {"name": "Münster, Anja", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Napierski, Markus", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Neef, Christian", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": "ab 01.09.2024"}, {"name": "Nienbarg, Ruth", "schicht": "", "kuerzel": "", "bem": ""}, {"name": "Paulike, Tim", "schicht": "Auszubildender", "kuerzel": "", "bem": "Azubi bis Ende 2. Lehrjahr, ab 01.09.2025"}, {"name": "Petzold, Kenneth", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}, {"name": "Pfadler, Michael", "schicht": "", "kuerzel": "", "bem": ""}, {"name": "Poturak, Nijaz", "schicht": "Schleuse", "kuerzel": "", "bem": "separater Schichtplan"}, {"name": "Predehl, Christoph", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}, {"name": "Prinz, Andreas", "schicht": "", "kuerzel": "", "bem": ""}, {"name": "Reichl, Manuel", "schicht": "Schleuse", "kuerzel": "", "bem": "separater Schichtplan"}, {"name": "Reinhardt, Maximilian", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": "ab 01.09.2026"}, {"name": "Reisach, Benjamin", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": "ab 01.11.2025"}, {"name": "Riedl, Thomas", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Röse, Manuela", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Schirmer, Massimo", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Schuster, Dietmar", "schicht": "Schleuse", "kuerzel": "", "bem": "separater Schichtplan"}, {"name": "Sperber, Anna", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}, {"name": "Steiger, Melanie", "schicht": "", "kuerzel": "", "bem": ""}, {"name": "Stelzl, Dominik", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": "ab 01.12.2025"}, {"name": "Tappeiner, Herbert", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": "ab 01.05.2025"}, {"name": "Thierbach, Felix", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": "bis auf weiteres Di, Mi"}, {"name": "To Minh, Nguyet", "schicht": "Behälterreinigung", "kuerzel": "", "bem": "separater Schichtplan ab 10.03.2025"}, {"name": "Tschirch, Sebastian", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Vasile, Ionut", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Veit, Andreas", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Volgger, Matthias", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Volkmann, Nino", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": "ab 09.06.2026"}, {"name": "Voss, Katharina", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": "ab 01.01.2026"}, {"name": "Weise, Alois", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": "ab 01.06.2024"}, {"name": "Wulff, Kathrin", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": ""}, {"name": "Wölky, Patrick", "schicht": "Team B – Spätschicht", "kuerzel": "", "bem": "ab 01.06.2025"}, {"name": "Yao, Olivier", "schicht": "Team A – Frühschicht", "kuerzel": "", "bem": ""}];
+const KALENDER   = [[1, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [2, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [3, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [4, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [5, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [6, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [7, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [8, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [9, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [10, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [11, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [12, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [13, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [14, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [15, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [16, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [17, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [18, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [19, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [20, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [21, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [22, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [23, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [24, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [25, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [26, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [27, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [28, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [29, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", "📌 Anker-KW"], [30, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [31, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [32, "Betriebsschließung", "Betriebsschließung", "Sommerurlaub August"], [33, "Betriebsschließung", "Betriebsschließung", "Sommerurlaub August"], [34, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [35, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [36, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [37, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [38, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [39, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [40, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [41, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [42, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [43, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [44, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [45, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [46, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [47, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [48, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [49, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [50, "Spätschicht (14:00–22:15)", "Frühschicht (06:00–14:15)", ""], [51, "Frühschicht (06:00–14:15)", "Spätschicht (14:00–22:15)", ""], [52, "Betriebsschließung", "Betriebsschließung", "Jahresabschluss Dezember"]];
+
+// ════════════════════════════════════════════
+//  ABWESENHEITS-STATE
+// ════════════════════════════════════════════
+const absentSet = new Set();
+
+function setAbsent(name, absent) {
+  if (absent) absentSet.add(name); else absentSet.delete(name);
+  refreshAllDropdowns();
+}
+
+function refreshAllDropdowns() {
+  document.querySelectorAll('select.ms').forEach(sel => {
+    const cur = sel.value;
+    rebuildOpts(sel);
+    sel.value = (!cur || absentSet.has(cur)) ? '' : cur;
+    sel.className = 'ms' + (sel.value ? ' filled' : '');
+  });
+}
+
+function rebuildOpts(sel) {
+  const ph = sel.dataset.ph || 'MA wählen';
+  sel.innerHTML = `<option value="">– ${ph} –</option>` +
+    MITARBEITER.filter(m => !absentSet.has(m.name))
+      .map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+}
+
+// ════════════════════════════════════════════
+//  QUALIFIKATIONS-STATE
+// ════════════════════════════════════════════
+const qualMap = {};
+MITARBEITER.forEach(m => { qualMap[m.name] = {}; });
+
+function saveQual(sel) {
+  qualMap[sel.dataset.ma][sel.dataset.an] = sel.value;
+}
+
+// ════════════════════════════════════════════
+//  HELPER: MA-Select erzeugen
+// ════════════════════════════════════════════
+let selCounter = 0;
+function ms(ph='MA wählen') {
+  const id = 'ms' + (++selCounter);
+  const opts = MITARBEITER.filter(m => !absentSet.has(m.name))
+    .map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+  return `<select class="ms" id="${id}" data-ph="${ph}" onchange="this.className='ms'+(this.value?' filled':'')">
+    <option value="">– ${ph} –</option>${opts}</select>`;
+}
+
+function inakt() { return '<span class="inact">–</span>'; }
+
+// ════════════════════════════════════════════
+//  PLAN-TABELLEN AUFBAUEN
+// ════════════════════════════════════════════
+
+// ── ZWEISCHICHT ──
+function buildZwei() {
+  // Kopf: Anlage | Abpack | FR MA1–MA4 Meister | SP MA1–MA4 Meister
+  const thead = document.getElementById('thead-zwei');
+  thead.innerHTML = `
+    <tr>
+      <th rowspan="2" style="min-width:160px;">Anlage / Bereich</th>
+      <th rowspan="2" style="min-width:110px;">Abpackform / Produkt</th>
+      <th colspan="5" class="sh-header" style="text-align:center;background:#E8640A;color:#fff;">Frühschicht (06:00–14:15)</th>
+      <th style="width:60px;" rowspan="2">Zust.</th>
+      <th colspan="5" class="sp-header" style="text-align:center;background:#2E7D8C;color:#fff;">Spätschicht (14:00–22:15)</th>
+      <th style="width:60px;" rowspan="2">Zust.</th>
+    </tr>
+    <tr>
+      <th>MA 1</th><th>MA 2</th><th>MA 3</th><th>MA 4</th><th>Meister</th>
+      <th>MA 1</th><th>MA 2</th><th>MA 3</th><th>MA 4</th><th>Meister</th>
+    </tr>`;
+
+  const tbody = document.getElementById('tbody-zwei');
+  let html = '', lastG = '';
+  ANLAGEN.forEach((a,i) => {
+    if (a.gruppe !== lastG) {
+      html += `<tr class="grp"><td colspan="14">${a.gruppe}</td></tr>`;
+      lastG = a.gruppe;
+    }
+    const cls = a.stick ? 'an an-stick' : 'an';
+    const badge = a.stick ? ' <span class="bdg bdg-or" style="font-size:9px;">★ OEE</span>' : '';
+    // MA3/MA4 pro Schicht inaktiv je nach Typ
+    const fr3 = a.ma3z  ? ms('MA 3') : inakt();
+    const fr4 = a.ma4z  ? ms('MA 4') : inakt();
+    const sp3 = a.ma3z  ? ms('MA 3') : inakt();
+    const sp4 = a.ma4z  ? ms('MA 4') : inakt();
+    html += `<tr>
+      <td><span class="${cls}">${a.name}</span>${badge}</td>
+      <td><input class="ap-input" type="text" placeholder="Produkt/Format"></td>
+      <td>${ms('MA 1 Früh')}</td><td>${ms('MA 2')}</td><td>${fr3}</td><td>${fr4}</td>
+      <td>${ms('Meister')}</td>
+      <td><input type="text" style="width:50px;border:1px solid var(--bd);border-radius:3px;padding:2px 4px;font-size:10px;font-family:var(--font);" placeholder="Kürzel"></td>
+      <td>${ms('MA 1 Spät')}</td><td>${ms('MA 2')}</td><td>${sp3}</td><td>${sp4}</td>
+      <td>${ms('Meister')}</td>
+      <td><input type="text" style="width:50px;border:1px solid var(--bd);border-radius:3px;padding:2px 4px;font-size:10px;font-family:var(--font);" placeholder="Kürzel"></td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ── PAUSENABLÖSUNG ZWEISCHICHT ──
+function buildPauseZwei() {
+  const tbody = document.getElementById('tbody-pause-zwei');
+  let html = '';
+  PAUSE_ZWEI.forEach(name => {
+    html += `<tr>
+      <td class="an">${name}</td>
+      <td>${ms('10:00 auto')}</td><td>${ms('MA 2')}</td><td>${ms('10:30')}</td>
+      <td>${ms('18:00 auto')}</td><td>${ms('MA 2')}</td><td>${ms('18:30')}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ── FREITAG ──
+function buildFr() {
+  const thead = document.getElementById('thead-fr');
+  thead.innerHTML = `
+    <tr>
+      <th rowspan="2" style="min-width:160px;">Anlage / Bereich</th>
+      <th rowspan="2" style="min-width:110px;">Abpackform / Produkt</th>
+      <th colspan="5" style="text-align:center;background:#E8640A;color:#fff;">Frühschicht (06:00–09:15)</th>
+      <th style="width:60px;" rowspan="2">Zust.</th>
+      <th colspan="5" style="text-align:center;background:#5D6D7E;color:#fff;">Mittelschicht (09:15–14:00)</th>
+      <th style="width:60px;" rowspan="2">Zust.</th>
+      <th colspan="5" style="text-align:center;background:#2E7D8C;color:#fff;">Spätschicht (14:00–17:30)</th>
+      <th style="width:60px;" rowspan="2">Zust.</th>
+    </tr>
+    <tr>
+      <th>MA 1</th><th>MA 2</th><th>MA 3</th><th>MA 4</th><th>Meister</th>
+      <th>MA 1</th><th>MA 2</th><th>MA 3</th><th>MA 4</th><th>Meister</th>
+      <th>MA 1</th><th>MA 2</th><th>MA 3</th><th>MA 4</th><th>Meister</th>
+    </tr>`;
+
+  const tbody = document.getElementById('tbody-fr');
+  let html = '', lastG = '';
+  ANLAGEN.forEach((a,i) => {
+    if (a.gruppe !== lastG) {
+      html += `<tr class="grp"><td colspan="20">${a.gruppe}</td></tr>`;
+      lastG = a.gruppe;
+    }
+    const cls = a.stick ? 'an an-stick' : 'an';
+    const badge = a.stick ? ' <span class="bdg bdg-or" style="font-size:9px;">★ OEE</span>' : '';
+    const m3 = a.ma3z ? ms('MA 3') : inakt();
+    const m4 = a.ma4z ? ms('MA 4') : inakt();
+    html += `<tr>
+      <td><span class="${cls}">${a.name}</span>${badge}</td>
+      <td><input class="ap-input" type="text" placeholder="Produkt/Format"></td>
+      <td>${ms('MA 1 Früh')}</td><td>${ms('MA 2')}</td><td>${m3}</td><td>${m4}</td><td>${ms('Meister')}</td>
+      <td><input type="text" style="width:50px;border:1px solid var(--bd);border-radius:3px;padding:2px 4px;font-size:10px;font-family:var(--font);" placeholder="Kürzel"></td>
+      <td>${ms('MA 1 Mittel')}</td><td>${ms('MA 2')}</td><td>${m3}</td><td>${m4}</td><td>${ms('Meister')}</td>
+      <td><input type="text" style="width:50px;border:1px solid var(--bd);border-radius:3px;padding:2px 4px;font-size:10px;font-family:var(--font);" placeholder="Kürzel"></td>
+      <td>${ms('MA 1 Spät')}</td><td>${ms('MA 2')}</td><td>${m3}</td><td>${m4}</td><td>${ms('Meister')}</td>
+      <td><input type="text" style="width:50px;border:1px solid var(--bd);border-radius:3px;padding:2px 4px;font-size:10px;font-family:var(--font);" placeholder="Kürzel"></td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ── PAUSE FREITAG ──
+function buildPauseFr() {
+  const tbody = document.getElementById('tbody-pause-fr');
+  let html = '';
+  PAUSE_FR.forEach(name => {
+    html += `<tr>
+      <td class="an">${name}</td>
+      <td>${ms('10:00 auto')}</td><td>${ms('MA 2')}</td><td>${ms('10:30')}</td>
+      <td>${ms('13:00 auto')}</td><td>${ms('MA 2')}</td><td>${ms('13:30')}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ── SAMSTAG ──
+function buildSa() {
+  const tbody = document.getElementById('tbody-sa');
+  let html = '', lastG = '';
+  ANLAGEN.forEach((a,i) => {
+    if (a.gruppe !== lastG) {
+      html += `<tr class="grp"><td colspan="8">${a.gruppe}</td></tr>`;
+      lastG = a.gruppe;
+    }
+    const cls = a.stick ? 'an an-stick' : 'an';
+    const badge = a.stick ? ' <span class="bdg bdg-or" style="font-size:9px;">★ OEE</span>' : '';
+    html += `<tr>
+      <td><span class="${cls}">${a.name}</span>${badge}</td>
+      <td><input class="ap-input" type="text" placeholder="Produkt/Format"></td>
+      <td>${ms('MA 1')}</td><td>${ms('MA 2')}</td>
+      <td>${ms('MA 3')}</td><td>${ms('MA 4')}</td>
+      <td>${ms('Meister')}</td>
+      <td><input class="ap-input" type="text" placeholder="Bemerkung"></td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ── PAUSE SAMSTAG ──
+function buildPauseSa() {
+  const tbody = document.getElementById('tbody-pause-sa');
+  let html = '';
+  PAUSE_SA.forEach(name => {
+    html += `<tr>
+      <td class="an">${name}</td>
+      <td>${ms('09:00 auto')}</td><td>${ms('MA 2')}</td>
+      <td>${ms('09:30 MA 1')}</td><td>${ms('MA 2')}</td>
+      <td><input class="ap-input" type="text" placeholder="Notiz" style="min-width:80px;"></td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ── WOCHENUEBERSICHT ──
+function buildWo() {
+  const tbody = document.getElementById('tbody-wo');
+  let html = '', lastG = '';
+  ANLAGEN.forEach((a,i) => {
+    if (a.gruppe !== lastG) {
+      html += `<tr><td colspan="8" style="background:#5D6D7E;color:#fff;font-weight:700;font-size:10px;text-transform:uppercase;padding:5px 10px;">${a.gruppe}</td></tr>`;
+      lastG = a.gruppe;
+    }
+    const cls = a.stick ? 'an an-stick' : 'an';
+    const days = ['mo','di','mi','do','fr','sa'];
+    const selects = days.map(d =>
+      `<td><select class="ms" style="min-width:90px;" onchange="this.className='ms'+(this.value?' filled':'')">
+        <option value="">–</option>
+        ${MITARBEITER.filter(m=>!absentSet.has(m.name)).map(m=>`<option>${m.name.split(',')[0]}</option>`).join('')}
+      </select></td>`
+    ).join('');
+    html += `<tr><td><span class="${cls}">${a.name}</span></td>
+      <td><span class="wo-fr">Früh</span></td>${selects}</tr>
+    <tr style="background:#F8F4F0;"><td></td>
+      <td><span class="wo-sp">Spät</span></td>${selects}</tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ── SCHICHTKALENDER ──
+function buildKal() {
+  const tbody = document.getElementById('tbody-kal');
+  const curKW = getKW(new Date());
+  let html = '';
+  KALENDER.forEach(([kw, teamA, teamB, hinweis]) => {
+    const isClosed = teamA === 'Betriebsschließung';
+    const isCur = kw === curKW;
+    const rowCls = isCur ? ' class="sk-cur"' : '';
+    let aHtml, bHtml;
+    if (isClosed) {
+      aHtml = `<span class="sk-cl">Betriebsschließung</span>`;
+      bHtml = `<span class="sk-cl">Betriebsschließung</span>`;
+    } else {
+      aHtml = teamA.startsWith('Früh')
+        ? `<span class="sk-a">☀️ ${teamA}</span>`
+        : `<span class="sk-b">🌙 ${teamA}</span>`;
+      bHtml = teamB.startsWith('Früh')
+        ? `<span class="sk-a">☀️ ${teamB}</span>`
+        : `<span class="sk-b">🌙 ${teamB}</span>`;
+    }
+    html += `<tr${rowCls}>
+      <td style="font-weight:700;">${isCur?'▶ ':''}KW ${String(kw).padStart(2,'0')}</td>
+      <td>${aHtml}</td><td>${bHtml}</td>
+      <td style="font-size:10px;color:var(--gy);">${hinweis}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ── URLAUB & KRANK ──
+function buildUk() {
+  const tbody = document.getElementById('tbody-uk');
+  let html = '';
+  MITARBEITER.forEach((m, i) => {
+    html += `<tr id="ukr${i}">
+      <td style="font-weight:500;">${m.name}</td>
+      <td><select class="us" id="ukst${i}" onchange="onUkChange(${i})">
+        <option value="">✅ Anwesend</option>
+        <option value="Urlaub">🏖 Urlaub</option>
+        <option value="Krank">🤒 Krank</option>
+        <option value="Sonstig">📋 Sonstiges</option>
+      </select></td>
+      <td><input type="date" class="ud" id="ukvon${i}" onchange="onUkDate(${i})"></td>
+      <td><input type="date" class="ud" id="ukbis${i}" onchange="onUkDate(${i})"></td>
+      <td><input type="text" style="border:1px solid var(--bd);border-radius:4px;padding:3px 6px;font-size:11px;width:100%;font-family:var(--font);" placeholder="Notiz …"></td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+function onUkChange(i) {
+  const sel = document.getElementById(`ukst${i}`);
+  const von = document.getElementById(`ukvon${i}`);
+  const bis = document.getElementById(`ukbis${i}`);
+  const name = MITARBEITER[i].name;
+  if (sel.value) {
+    sel.className = 'us abs';
+    const today = new Date(); today.setHours(0,0,0,0);
+    const vd = von.value ? new Date(von.value) : null;
+    const bd = bis.value ? new Date(bis.value) : null;
+    const inRange = (!vd || today >= vd) && (!bd || today <= bd);
+    setAbsent(name, inRange);
+  } else {
+    sel.className = 'us';
+    setAbsent(name, false);
+  }
+}
+function onUkDate(i) {
+  const sel = document.getElementById(`ukst${i}`);
+  if (sel.value) onUkChange(i);
+}
+
+// ── QUALIFIKATIONSMATRIX ──
+function buildQual() {
+  const thead = document.getElementById('thead-qual');
+  const shortNames = QUAL_ANLAGEN.map(a => {
+    const parts = a.replace('Misch- und Nassgranulierung','MNG')
+      .replace('Schüttgutabfüllung','Schüttgut').replace('Containermischer','CM');
+    return parts.length > 16 ? parts.substring(0,14)+'…' : parts;
+  });
+  thead.innerHTML = `<tr><th style="min-width:160px;">Mitarbeiter</th><th style="min-width:50px;">Kürzel</th>
+    ${QUAL_ANLAGEN.map((a,j) => `<th style="min-width:70px;text-align:center;" title="${a}">${shortNames[j]}</th>`).join('')}
+  </tr>`;
+
+  const tbody = document.getElementById('tbody-qual');
+  const opts = `<option value="">–</option>
+    <option value="✅">✅</option>
+    <option value="🔄">🔄</option>
+    <option value="👁">👁</option>`;
+  let html = '';
+  MITARBEITER.forEach((m, i) => {
+    const cols = QUAL_ANLAGEN.map((an,j) =>
+      `<td style="text-align:center;"><select class="qs" data-ma="${m.name}" data-an="${an}" onchange="saveQual(this)">${opts}</select></td>`
+    ).join('');
+    html += `<tr><td style="font-weight:500;">${m.name}</td>
+      <td><input type="text" value="${m.kuerzel}" placeholder="Kürzel"
+        style="border:1px solid var(--bd);border-radius:3px;padding:2px 5px;font-size:10px;width:50px;font-family:var(--font);"
+        oninput="MITARBEITER[${i}].kuerzel=this.value"></td>
+      ${cols}</tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ── MITARBEITERLISTE ──
+function buildMal() {
+  const tbody = document.getElementById('tbody-mal');
+  let html = '';
+  MITARBEITER.forEach((m, i) => {
+    let cls = '';
+    if (m.schicht.includes('Team A')) cls = 'style="color:var(--or);font-weight:600;"';
+    else if (m.schicht.includes('Team B')) cls = 'style="color:var(--te);font-weight:600;"';
+    else if (m.schicht) cls = 'style="color:var(--gy);font-style:italic;"';
+    html += `<tr><td style="font-weight:500;">${m.name}</td>
+      <td ${cls}>${m.schicht||'–'}</td>
+      <td><input type="text" value="${m.kuerzel}" placeholder="Kürzel"
+        style="border:1px solid var(--bd);border-radius:3px;padding:2px 5px;font-size:10px;width:55px;font-family:var(--font);"
+        oninput="MITARBEITER[${i}].kuerzel=this.value"></td>
+      <td style="font-size:10px;color:var(--gy);">${m.bem||''}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ════════════════════════════════════════════
+//  AUTO-BEFÜLLEN
+// ════════════════════════════════════════════
+const AUSSCHLUSS = ['Schleuse','Behälterreinigung','Auszubildender'];
+
+function istPassend(m, schicht) {
+  const s = m.schicht || '';
+  if (!s) return false;
+  if (AUSSCHLUSS.some(x => s.includes(x))) return false;
+  if (schicht === 'frueh') return s.includes('Team A') || s.includes('Nur Früh');
+  if (schicht === 'spaet') return s.includes('Team B') || s.includes('Nur Spät');
+  return false;
+}
+
+function autoBefuellen(panelId, schicht) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  const used = new Set();
+
+  panel.querySelectorAll('tr').forEach(row => {
+    const anEl = row.querySelector('.an, .an-stick');
+    if (!anEl) return;
+    const anlage = anEl.textContent.trim();
+
+    row.querySelectorAll('select.ms').forEach(sel => {
+      if (sel.value) return;
+      // Schicht-Filter: nur wenn der Spalten-Placeholder auf die richtige Schicht passt
+      const ph = (sel.dataset.ph || '').toLowerCase();
+      const isFruehCol = ph.includes('früh') || ph.includes('mittel') || ph.includes('auto') || (!ph.includes('spät') && !ph.includes('sp'));
+      const isSpätCol  = ph.includes('spät') || ph.includes('sp');
+      if (schicht === 'frueh' && isSpätCol) return;
+      if (schicht === 'spaet' && isFruehCol && !ph.includes('auto')) return;
+
+      const kandidaten = MITARBEITER
+        .filter(m => !absentSet.has(m.name))
+        .filter(m => istPassend(m, schicht))
+        .filter(m => !used.has(m.name))
+        .filter(m => {
+          const q = (qualMap[m.name]||{})[anlage] || '';
+          return q === '✅' || q === '🔄';
+        });
+      if (!kandidaten.length) return;
+      sel.value = kandidaten[0].name;
+      sel.className = 'ms filled';
+      used.add(kandidaten[0].name);
+    });
+  });
+}
+
+function planLeeren(panelId) {
+  document.getElementById(panelId).querySelectorAll('select.ms').forEach(sel => {
+    sel.value = ''; sel.className = 'ms';
+  });
+}
+
+// ════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════
+const TAB_MAP = {zwei:0,fr:1,sa:2,wo:3,kal:4,uk:5,qual:6,mal:7};
+function showTab(id) {
+  document.querySelectorAll('.tp').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tp-'+id).classList.add('active');
+  document.querySelectorAll('.tab')[TAB_MAP[id]].classList.add('active');
+}
+
+// ════════════════════════════════════════════
+//  SYNC HEADER ↔ TAB-META
+// ════════════════════════════════════════════
+function onGKW(v) {
+  document.getElementById('kwZwei').value = v;
+  document.getElementById('gBadge').textContent = 'KW ' + v;
+  document.getElementById('gKW').value = v;
+  // Team aus Kalender ableiten
+  const row = KALENDER.find(r => r[0] === +v);
+  if (row && row[1] !== 'Betriebsschließung') {
+    const isFrueh = row[1].startsWith('Früh');
+    const val = isFrueh ? 'frueh' : 'spaet';
+    document.getElementById('gTeam').value = val;
+    document.getElementById('teamZwei').value = val;
+  }
+}
+function onGDate(v) {
+  document.getElementById('datZwei').value = v;
+  document.getElementById('gDate').value = v;
+}
+function onGTeam(v) {
+  document.getElementById('gTeam').value = v;
+  document.getElementById('teamZwei').value = v;
+}
+
+// ════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════
+function getKW(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+  const y = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - y)/86400000) + 1)/7);
+}
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  MITARBEITER.forEach(m => { qualMap[m.name] = {}; });
+
+  const today = new Date();
+  const kw    = getKW(today);
+  const iso   = today.toISOString().split('T')[0];
+
+  document.getElementById('gKW').value    = kw;
+  document.getElementById('gDate').value  = iso;
+  document.getElementById('kwZwei').value = kw;
+  document.getElementById('datZwei').value = iso;
+  document.getElementById('gBadge').textContent = 'KW ' + kw;
+  document.getElementById('heuteDatum').textContent =
+    today.toLocaleDateString('de-DE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  // Team aus Kalender
+  const row = KALENDER.find(r => r[0] === kw);
+  if (row && row[1] !== 'Betriebsschließung') {
+    const val = row[1].startsWith('Früh') ? 'frueh' : 'spaet';
+    document.getElementById('gTeam').value   = val;
+    document.getElementById('teamZwei').value = val;
+  }
+
+  buildZwei(); buildPauseZwei();
+  buildFr();   buildPauseFr();
+  buildSa();   buildPauseSa();
+  buildWo();
+  buildKal();
+  buildUk();
+  buildQual();
+  buildMal();
+});
+</script>
+</body>
+</html>
